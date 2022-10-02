@@ -19,7 +19,7 @@ invalid_input_type = {
     'invalid_money_range' : '잔액이 부족합니다.',
 }
 
-def transport_positive_number(input_value):
+def transport_not_negative_number(input_value):
     if input_value.isnumeric() is not True:
         return 'invalid_int_type'
     elif int(input_value) < 0:
