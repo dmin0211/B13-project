@@ -13,18 +13,20 @@ invalid_input_type = {
     'invalid_manual_command': '존재하지 않는 명령어입니다.',
     'invalid_int_type': '숫자만 입력해주세요.',
     'invalid_drink': '존재하지 않는 음료수입니다.',
-    'invalid_positive_number': '0 초과 양수만 입력해주세요.',
+    'invalid_not_negative_number': '0이상의 정수만 입력해주세요.',
     'invalid_drink_range': '유효하지 않는 음료수 번호입니다.',
     'invalid_sole_out' : '품절된 음료수입니다.',
     'invalid_money_range' : '잔액이 부족합니다.',
 }
 
 def transport_not_negative_number(input_value):
-    if input_value.isnumeric() is not True:
+    try:
+        input_value = int(input_value)
+        if input_value < 0:
+            return 'invalid_not_negative_number'
+        return input_value
+    except:
         return 'invalid_int_type'
-    elif int(input_value) < 0:
-        return 'invalid_positive_number'
-    return int(input_value)
 
 # custom input
 def custom_input(prompt, transport_func, **kwargs):
@@ -72,6 +74,7 @@ def process_buy(drink):
         total_money += money * settings.TEMP_SALES[money]
     if drink['cost'] > total_money:
         print(invalid_input_type['invalid_money_range'])
+        process_drink_buy()
     else:
         print(f'{drink["index"]}번 {drink["name"]}을 구매하셨습니다. 잔돈 : {total_money - drink["cost"]}원')
         process_change(drink['cost'])
@@ -149,12 +152,21 @@ def show_input_money():
 
 def money_input(total_money):
     total_money = total_money
-    for money in settings.TEMP_SALES:
+    num = 0
+    lst = list(settings.TEMP_SALES.keys())
+    money = lst[num]
+    while money:
         cnt = custom_input(f'투입하실 {money}원의 수량을 입력해주세요.(현재 총 금액 : {total_money})',
-                           transport_positive_number)
-        settings.TEMP_SALES[money] = cnt
-        print(cnt)
-        total_money += money * settings.TEMP_SALES[money]
+                           transport_not_negative_number)
+        if type(cnt) is int:
+            settings.TEMP_SALES[money] = cnt
+            total_money += money * settings.TEMP_SALES[money]
+            if money == lst[-1]:
+                break
+            num += 1
+            money = lst[num]
+        else:
+            print(invalid_input_type[cnt])
         
 # 투입한 금액 반환받기
 def process_money_return():
