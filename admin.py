@@ -30,7 +30,7 @@ def transport_positive_number(input_value):
 
 # custom input
 def custom_input(prompt, transport_func, **kwargs):
-    input_value = input(prompt + ' : ')
+    input_value = (input(prompt + ' : ')).strip()
     if kwargs == {}:
         result_value = transport_func(input_value)
     else:
