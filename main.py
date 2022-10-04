@@ -28,11 +28,11 @@ def __main__():
         if a == 1:
             clearConsole()
             process_consumer()
-            clearConsole()
+            #clearConsole()
         elif a == 2:
             clearConsole()
             process_admin()
-            clearConsole()
+            #clearConsole()
         elif a == 3:
             exit()
         else:
