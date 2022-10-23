@@ -13,18 +13,7 @@ main_manual_mapping = {
 
 invalid_input_type = {
     'invalid_manual_command': '존재하지 않는 명령어입니다.',
-    'invalid_int_type': '숫자만 입력해주세요.',
-    'invalid_positive_number': '0이상의 정수만 입력해주세요.',
 }
-
-def transport_positive_number(input_value):
-    try:
-        input_value = int(input_value)
-        if input_value < 0:
-            return 'invalid_positive_number'
-        return input_value
-    except:
-        return 'invalid_int_type'
 
 # custom input
 def custom_input(prompt, transport_func, **kwargs):
@@ -71,12 +60,10 @@ def manual_input(prompt):
 def __main__():
     while True:
         process_name = manual_input('메인 메뉴를 선택해주세요.')
-        
+
         clearConsole()
         globals()[process_name]()
         clearConsole()
         
-
-
 
 __main__()
