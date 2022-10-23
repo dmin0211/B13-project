@@ -1,4 +1,15 @@
 import settings
+import os
+
+string_before_prompt = ''
+
+
+def clear_console():
+    command = 'clear'
+    if os.name in ('nt', 'dos'):
+        command = 'cls'
+    os.system(command)
+
 
 admin_manual_mapping = {
     'process_view_menu': ['0', '메뉴 보기'],
@@ -41,28 +52,32 @@ def custom_input(prompt, transport_func, **kwargs):
 # processes
 # 메뉴 보기
 def process_view_menu():
-    print('=========관리자 메뉴얼==========')
-    print('0. 메뉴 보기')
-    print('1. 음료수 수량 확인')
-    print('2. 음료수 채워 넣기')
-    print('3. 거스름돈 채워 넣기')
-    print('4. 매출 보기')
-    print('5. 매출 정산')
-    print('6. 관리자 모드 나가기(exit)')
+    tmp_string = ''
+    tmp_string += '=========관리자 메뉴얼==========\n'
+    tmp_string += '0. 메뉴 보기\n'
+    tmp_string += '1. 음료수 수량 확인\n'
+    tmp_string += '2. 음료수 채워 넣기\n'
+    tmp_string += '3. 거스름돈 채워 넣기\n'
+    tmp_string += '4. 매출 보기\n'
+    tmp_string += '5. 매출 정산\n'
+    tmp_string += '6. 관리자 모드 나가기(exit)'
+    return tmp_string
 
 
 # 음료수 재고 확인
 def process_drink_stock():
-    print('========음료수 재고=========')
+    tmp_string = '========음료수 재고========='
     for index, drink in enumerate(settings.DRINK_STOCK):
-        print(f'{index}. {drink["name"]}\t: {drink["stock"]}')
-    print('============================')
+        tmp_string += f'\n{index}. {drink["name"]}\t: {drink["stock"]}'
+    tmp_string += '\n============================'
+
+    return tmp_string
 
 
 # 음료수 채워 넣기
 def transport_drink_name_input(input_value):
     if input_value.isnumeric() is True:
-        if int(input_value) >= settings.DRINK_POCKET_SIZE and int(input_value) < 0:
+        if int(input_value) >= settings.DRINK_POCKET_SIZE or int(input_value) < 0:
             return 'invalid_drink_range'
         else:
             return {'index': int(input_value), **settings.DRINK_STOCK[int(input_value)]}
@@ -132,7 +147,7 @@ def process_replenishment_after_select_drink(drink):
 
 
 def process_drink_replenishment():
-    process_drink_stock()
+    print(process_drink_stock())
     drink = process_drink_select()
     process_replenishment_after_select_drink(drink)
 
@@ -147,12 +162,13 @@ def process_change_replenishment():
 # 매출 보기
 def process_sales_view():
     total_sales = 0
-    print('=========매출 보기==========')
+    tmp_string = '=========매출 보기=========='
     for unit, count in settings.SALES.items():
         total_sales += unit * count
-        print('[', unit, '원권]\t: ', count)
-    print('전체 매출 : ', total_sales)
-    print('============================')
+        tmp_string += f'\n[{unit} 원권]\t: {str(count)}'
+    tmp_string += f'\n전체 매출 : {str(total_sales)}'
+    tmp_string += '\n============================'
+    return tmp_string
 
 
 # 매출 정산
@@ -161,7 +177,8 @@ def process_sales_settlement():
     for unit, count in settings.SALES.items():
         settings.SALES[unit] = 0
         total_sale += unit * count
-    print(f'매출 {total_sale}을 정산했습니다.')
+    tmp_string = f'매출 {total_sale}을 정산했습니다.'
+    return tmp_string
 
 
 def transport_manual_input(input_value):
@@ -172,18 +189,26 @@ def transport_manual_input(input_value):
 
 
 def manual_input(prompt):
-    process_view_menu()
+    print(string_before_prompt)
     process_name = custom_input(prompt, transport_manual_input)
 
     if process_name == 'invalid_manual_command':
         print(invalid_input_type[process_name])
         process_name = manual_input(prompt)
-    elif process_name == 'process_view_menu':
-        process_name = manual_input(prompt)
     return process_name
 
 
 def process_admin():
+    global string_before_prompt
+    menu_string = process_view_menu()
+    string_before_prompt = menu_string
     process_name = manual_input('관리자 권한 메뉴를 선택해주세요.')
-    if process_name != 'process_exit':
-        globals()[process_name]()
+    while process_name != 'process_exit':
+        string_before_prompt = ''
+        set_before_prompt = globals()[process_name]()
+        if set_before_prompt is not None:
+            string_before_prompt = set_before_prompt
+        else:
+            string_before_prompt = menu_string
+        clear_console()
+        process_name = manual_input('관리자 권한 메뉴를 선택해주세요.')
