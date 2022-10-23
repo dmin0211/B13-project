@@ -116,11 +116,11 @@ def transport_duplicate_drink_select_input(input_value, drinks):
         return 'invalid_drink'
 
 def process_duplicate_drink_select(drinks):
-    for index, drink in enumerate(settings.DRINK_STOCK):
+    for drink in drinks:
         drink_sold_out = drink['cost']
         if drink['stock'] == 0:
             drink_sold_out = 'X'
-        print(f'{index}. {drink["name"]}\t: {drink_sold_out}')
+        print(f'{drink["index"]}. {drink["name"]}\t: {drink_sold_out}')
     select_drink = custom_input('동일한 음료수가 들어있는 칸이 존재합니다. 칸 번호를 입력해주세요.',
                                 transport_duplicate_drink_select_input,
                                 drinks=drinks)
