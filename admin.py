@@ -26,8 +26,8 @@ invalid_input_type = {
     'invalid_int_type': '숫자만 입력해주세요.',
     'invalid_drink': '존재하지 않는 음료수입니다.',
     'invalid_positive_number': '0 초과 양수만 입력해주세요.',
-    'invalid_drink_range': '유효하지 않는 음료수 번호입니다.',
     'invalid_drink_max_stock': '채울 수 있는 음료의 최대치는 10개입니다.',
+    'invalid_drink_replenishment': '모든 음료수가 최대수량입니다.',
 }
 
 
@@ -78,7 +78,7 @@ def process_drink_stock():
 def transport_drink_name_input(input_value):
     if input_value.isnumeric() is True:
         if int(input_value) >= settings.DRINK_POCKET_SIZE or int(input_value) < 0:
-            return 'invalid_drink_range'
+            return 'invalid_drink'
         else:
             return {'index': int(input_value), **settings.DRINK_STOCK[int(input_value)]}
     else:
@@ -148,6 +148,11 @@ def process_replenishment_after_select_drink(drink):
 
 def process_drink_replenishment():
     print(process_drink_stock())
+    total_stock = 0
+    for index, drink in enumerate(settings.DRINK_STOCK):
+        total_stock += int(drink['stock'])
+    if (total_stock >= settings.MAX_STOCK * settings.DRINK_POCKET_SIZE):
+        return invalid_input_type['invalid_drink_replenishment']
     drink = process_drink_select()
     process_replenishment_after_select_drink(drink)
 
