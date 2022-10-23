@@ -27,15 +27,15 @@ invalid_input_type = {
     'invalid_drink': '존재하지 않는 음료수입니다.',
     'invalid_positive_number': '0 초과 양수만 입력해주세요.',
     'invalid_drink_max_stock': '채울 수 있는 음료의 최대치는 10개입니다.',
-    'invalid_drink_replenishment': '모든 음료수가 최대수량입니다.',
+    'invalid_drink_replenishment': '음료수가 최대수량입니다.',
 }
 
 
 def transport_positive_number(input_value):
-    if input_value.isnumeric() is not True:
-        return 'invalid_int_type'
-    elif int(input_value) <= 0:
+    if input_value[0] == '-' and input_value[1:].isnumeric() is True:
         return 'invalid_positive_number'
+    elif input_value.isnumeric() is not True:
+        return 'invalid_int_type'
     return int(input_value)
 
 
@@ -121,9 +121,20 @@ def process_drink_select():
         print(invalid_input_type[drink])
         return process_drink_select()
     elif type(drink) == dict:
-        return drink
+        if drink['stock'] == settings.MAX_STOCK:
+            print(invalid_input_type['invalid_drink_replenishment'])
+            return process_drink_select()
+        else:
+            return drink
     elif type(drink) == list:
-        return process_duplicate_drink_select(drink)
+        is_max_stock = True
+        for item in drink:
+            is_max_stock = is_max_stock and item['stock'] == settings.MAX_STOCK
+        if is_max_stock is True:
+            print(invalid_input_type['invalid_drink_replenishment'])
+            return process_drink_select()
+        else:
+            return process_duplicate_drink_select(drink)
 
 
 def transport_drink_replenishment_amount_input(input_value, current_drink_stock):
@@ -161,7 +172,11 @@ def process_drink_replenishment():
 def process_change_replenishment():
     replenishment_amount = custom_input(f'보충할 거스름돈량을 입력해주세요.(현재 거스름돈 : {settings.CHANGE})',
                                         transport_positive_number)
-    settings.CHANGE += replenishment_amount
+    if type(replenishment_amount) == str:
+        print(invalid_input_type[replenishment_amount])
+        process_change_replenishment()
+    else:
+        settings.CHANGE += replenishment_amount
 
 
 # 매출 보기
