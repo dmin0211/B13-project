@@ -76,6 +76,7 @@ def process_change(cost):
         print(settings.TEMP_SALES[money])
     change = total_money - cost
     settings.CHANGE -= change
+    return change
 
 def process_buy(drink):
     total_money = 0
@@ -86,8 +87,8 @@ def process_buy(drink):
     if drink['cost'] > total_money:
         return invalid_input_type['invalid_money_range']
     else:
-        return f'{drink["index"]}번 {drink["name"]}을 구매하셨습니다. 잔돈 : {total_money - drink["cost"]}원'
-        process_change(drink['cost'])
+        change = process_change(drink['cost'])
+        return f'{drink["index"]}번 {drink["name"]}을 구매하셨습니다. 잔돈 : {change}원'
         
 def transport_drink_name_input(input_value):
     if input_value.isnumeric() is True:
