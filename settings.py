@@ -1,4 +1,4 @@
-CHANGE = 10 ** 6
+CHANGE = 10 ** 5
 MAX_STOCK = 10
 DRINK_POCKET_SIZE = 10
 DRINK_KINDS = ['파워에이드', '게토레이', '포카리스웨트', '하늘보리', '솔의눈', '환타', '코카콜라', '칠성사이다', '펩시콜라']

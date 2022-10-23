@@ -1,4 +1,7 @@
 import settings
+import os
+
+string_before_prompt = ''
 
 consumer_manual_mapping = {
     'process_view_menu': ['0', '메뉴 보기'],
@@ -14,8 +17,8 @@ invalid_input_type = {
     'invalid_int_type': '숫자만 입력해주세요.',
     'invalid_drink': '존재하지 않는 음료수입니다.',
     'invalid_not_negative_number': '0이상의 정수만 입력해주세요.',
-    'invalid_drink_range': '유효하지 않는 음료수 번호입니다.',
-    'invalid_sole_out' : '품절된 음료수입니다.',
+    'invalid_drink_range': '유효하지 않은 음료수 번호입니다.',
+    'invalid_sold_out' : '품절된 음료수입니다.',
     'invalid_money_range' : '잔액이 부족합니다.',
 }
 
@@ -40,23 +43,28 @@ def custom_input(prompt, transport_func, **kwargs):
 # processes
 # 메뉴 보기
 def process_view_menu():
-    print('=========소비자 메뉴얼==========')
-    print('0. 메뉴 보기')
-    print('1. 음료수 목록 보기')
-    print('2. 음료수 구입하기')
-    print('3. 금액 투입하기')
-    print('4. 투입 금액 반환받기')
-    print('5. 소비자 모드 나가기(exit)')
+    tmp_string = ''
+    tmp_string += '=========소비자 메뉴얼==========\n'
+    tmp_string += '0. 메뉴 보기\n'
+    tmp_string += '1. 음료수 목록 보기\n'
+    tmp_string += '2. 음료수 구입하기\n'
+    tmp_string += '3. 금액 투입하기\n'
+    tmp_string += '4. 투입 금액 반환받기\n'
+    tmp_string += '5. 소비자 모드 나가기(exit)'
+    return tmp_string
 
 #음료수 목록 확인
 def process_drink_list():
-    print('========음료수 목록=========')
+    tmp_string = '========음료수 목록========='
     for index, drink in enumerate(settings.DRINK_STOCK):
         drink_sold_out = drink['cost']
         if drink['stock'] == 0:
             drink_sold_out = 'X'
-        print(f'{index}. {drink["name"]}\t: {drink_sold_out}')
-    print('============================')
+        
+        tmp_string += f'\n{index}. {drink["name"]}\t: {drink_sold_out}'
+    tmp_string += '\n============================'
+
+    return tmp_string
 
 #음료수 구매하기    
 def process_change(cost):
@@ -65,6 +73,7 @@ def process_change(cost):
         settings.SALES[money] += settings.TEMP_SALES[money]
         total_money += money * settings.TEMP_SALES[money]
         settings.TEMP_SALES[money] = 0
+        print(settings.TEMP_SALES[money])
     change = total_money - cost
     settings.CHANGE -= change
 
@@ -72,16 +81,17 @@ def process_buy(drink):
     total_money = 0
     for money in settings.TEMP_SALES:
         total_money += money * settings.TEMP_SALES[money]
+    if drink['stock'] == 0:
+        return invalid_input_type['invalid_sold_out']
     if drink['cost'] > total_money:
-        print(invalid_input_type['invalid_money_range'])
-        process_drink_buy()
+        return invalid_input_type['invalid_money_range']
     else:
-        print(f'{drink["index"]}번 {drink["name"]}을 구매하셨습니다. 잔돈 : {total_money - drink["cost"]}원')
+        return f'{drink["index"]}번 {drink["name"]}을 구매하셨습니다. 잔돈 : {total_money - drink["cost"]}원'
         process_change(drink['cost'])
         
 def transport_drink_name_input(input_value):
     if input_value.isnumeric() is True:
-        if int(input_value) >= settings.DRINK_POCKET_SIZE and int(input_value) < 0:
+        if int(input_value) >= settings.DRINK_POCKET_SIZE or int(input_value) < 0:
             return 'invalid_drink_range'
         else:
             return {'index': int(input_value), **settings.DRINK_STOCK[int(input_value)]}
@@ -130,28 +140,30 @@ def process_drink_select():
         return process_duplicate_drink_select(drink)
 
 def process_drink_buy():
-    process_drink_list()
+    print(process_drink_list())
     drink = process_drink_select()
-    process_buy(drink)
+    return process_buy(drink)
 
 # 금액 투입하기
 def process_money_input():
-    total_money = show_input_money()
-    money_input(total_money)
-    show_input_money()
+    print(show_input_money())
+    money_input()
+    return show_input_money()
     
 def show_input_money():
-    print('========투입된 금액=========')
+    tmp_string = '========투입된 금액=========\n'
     total_money = 0
     for money in settings.TEMP_SALES:
-        print(f'{money}\t: {settings.TEMP_SALES[money]}개')
+        tmp_string += f'{money}\t: {settings.TEMP_SALES[money]}개\n'
         total_money += money * settings.TEMP_SALES[money]
-    print(f'총\t  {total_money}원')
-    print('============================')
-    return total_money
+    tmp_string += f'총\t: {total_money}원\n'
+    tmp_string += '============================\n'
+    return tmp_string
 
-def money_input(total_money):
-    total_money = total_money
+def money_input():
+    total_money = 0
+    for money in settings.TEMP_SALES:
+        total_money += money * settings.TEMP_SALES[money]
     num = 0
     lst = list(settings.TEMP_SALES.keys())
     money = lst[num]
@@ -159,8 +171,8 @@ def money_input(total_money):
         cnt = custom_input(f'투입하실 {money}원의 수량을 입력해주세요.(현재 총 금액 : {total_money})',
                            transport_not_negative_number)
         if type(cnt) is int:
-            settings.TEMP_SALES[money] = cnt
-            total_money += money * settings.TEMP_SALES[money]
+            settings.TEMP_SALES[money] += cnt
+            total_money += money * cnt
             if money == lst[-1]:
                 break
             num += 1
@@ -174,7 +186,8 @@ def process_money_return():
     for money in settings.TEMP_SALES:
         total_money += money * settings.TEMP_SALES[money]
         settings.TEMP_SALES[money] = 0
-    print(f'투입하신 {total_money}원이 반환되었습니다.')
+    tmp_string = f'투입하신 {total_money}원이 반환되었습니다.'
+    return tmp_string
 
 def transport_manual_input(input_value):
     for process_name, valid_input in consumer_manual_mapping.items():
@@ -183,17 +196,31 @@ def transport_manual_input(input_value):
     return 'invalid_manual_command'
 
 def manual_input(prompt):
-    process_view_menu()
+    print(string_before_prompt)
     process_name = custom_input(prompt, transport_manual_input)
 
     if process_name == 'invalid_manual_command':
         print(invalid_input_type[process_name])
         process_name = manual_input(prompt)
-    elif process_name == 'process_view_menu':
-        process_name = manual_input(prompt)
     return process_name
 
+def clearConsole():
+    command = 'clear'
+    if os.name in ('nt', 'dos'):
+        command = 'cls'
+    os.system(command)
+
 def process_consumer():
+    global string_before_prompt
+    menu_string = process_view_menu()
+    string_before_prompt = menu_string
     process_name = manual_input('소비자 메뉴를 선택해주세요.')
-    if process_name != 'process_exit':
-        globals()[process_name]()
+    while process_name != 'process_exit':
+        string_before_prompt = ''
+        set_before_prompt = globals()[process_name]()
+        if set_before_prompt is not None:
+            string_before_prompt = set_before_prompt
+        else:
+            string_before_prompt = menu_string
+        clearConsole()
+        process_name = manual_input('소비자 메뉴를 선택해주세요.')
