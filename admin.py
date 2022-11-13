@@ -172,6 +172,12 @@ def process_drink_replenishment():
 def process_change_replenishment():
     money = list(settings.CHANGE.keys())
     money_index = 0
+    current_change_string = '========거스름돈 수량========='
+    for unit, count in settings.CHANGE.items():
+        current_change_string += f'\n[{unit} 원권]\t: {str(count)}'
+    current_change_string += '\n=============================='
+
+    print(current_change_string)
     while money_index < len(money):
         replenishment_amount = custom_input(f'보충할 {money[money_index]} 원권 수량을 입력해주세요.',
                                             transport_positive_number)
