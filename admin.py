@@ -170,13 +170,22 @@ def process_drink_replenishment():
 
 # 거스름돈 채워 넣기
 def process_change_replenishment():
-    replenishment_amount = custom_input(f'보충할 거스름돈량을 입력해주세요.(현재 거스름돈 : {settings.CHANGE})',
-                                        transport_positive_number)
-    if type(replenishment_amount) == str:
-        print(invalid_input_type[replenishment_amount])
-        process_change_replenishment()
-    else:
-        settings.CHANGE += replenishment_amount
+    money = list(settings.CHANGE.keys())
+    money_index = 0
+    while money_index < len(money):
+        replenishment_amount = custom_input(f'보충할 {money[money_index]} 원권 수량을 입력해주세요.',
+                                            transport_positive_number)
+        if type(replenishment_amount) == str:
+            print(invalid_input_type[replenishment_amount])
+        else:
+            settings.CHANGE[money[money_index]] += replenishment_amount
+            money_index += 1
+
+    tmp_string = '========거스름돈 수량========='
+    for unit, count in settings.CHANGE.items():
+        tmp_string += f'\n[{unit} 원권]\t: {str(count)}'
+    tmp_string += '\n=============================='
+    return tmp_string
 
 
 # 매출 보기

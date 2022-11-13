@@ -1,4 +1,3 @@
-CHANGE = 10 ** 5
 MAX_STOCK = 10
 DRINK_POCKET_SIZE = 10
 DRINK_KINDS = ['파워에이드', '게토레이', '포카리스웨트', '하늘보리', '솔의눈', '환타', '코카콜라', '칠성사이다', '펩시콜라']
@@ -14,6 +13,12 @@ DRINK_STOCK = [
     {'name': DRINK_KINDS[8], 'stock': 8, 'cost': 1800},
     {'name': DRINK_KINDS[8], 'stock': 10, 'cost': 1800},
 ]
+CHANGE = {
+    100: 30,
+    500: 10,
+    1000: 4,
+    5000: 1,
+}
 SALES = {
     100: 5,
     500: 4,
