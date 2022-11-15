@@ -20,6 +20,7 @@ invalid_input_type = {
     'invalid_drink_range': '유효하지 않은 음료수 번호입니다.',
     'invalid_sold_out' : '품절된 음료수입니다.',
     'invalid_money_range' : '잔액이 부족합니다.',
+    'invalid_change' : '거스름돈이 부족합니다.'
 }
 
 def transport_not_negative_number(input_value):
@@ -63,22 +64,55 @@ def process_drink_list():
         
         tmp_string += f'\n{index}. {drink["name"]}\t: {drink_sold_out}'
     tmp_string += '\n============================'
-
     return tmp_string
 
+#잔돈 계산하기
+def change_calculation(change, change_dict):
+    for money in change_dict:
+        money_num = change // money
+        if money_num <= settings.CHANGE[money]:
+            change_dict[money] = money_num
+            change = change % money
+        else:
+            change -= settings.CHANGE[money]*money
+            change_dict[money] = settings.CHANGE[money]
+    if change > 0:
+        return False
+    return True
+
 #음료수 구매하기    
-def process_change(cost):
+def process_change(cost, change_dict):
     total_money = 0
-    for money in settings.SALES:
-        settings.SALES[money] += settings.TEMP_SALES[money]
+    for money in settings.TEMP_SALES:
         total_money += money * settings.TEMP_SALES[money]
-        settings.TEMP_SALES[money] = 0
-        print(settings.TEMP_SALES[money])
     change = total_money - cost
-    settings.CHANGE -= change
-    return change
+    if change_calculation(change, change_dict):
+        for money in settings.SALES:
+            #매출에 추가
+            settings.SALES[money] += settings.TEMP_SALES[money]
+            settings.TEMP_SALES[money] = 0
+            settings.CHANGE[money] -= change_dict[money]
+        return True
+    else:
+        return False
+
+def show_change(change):
+    tmp_string = '========잔돈 금액=========\n'
+    total_money = 0
+    for money in change:
+        tmp_string += f'{money}\t: {change[money]}개\n'
+        total_money += money * change[money]
+    tmp_string += f'총\t: {total_money}원\n'
+    tmp_string += '============================'
+    return tmp_string
 
 def process_buy(drink):
+    change_dict = {
+        5000: 0,
+        1000: 0,
+        500: 0,
+        100: 0,
+    }
     total_money = 0
     for money in settings.TEMP_SALES:
         total_money += money * settings.TEMP_SALES[money]
@@ -86,9 +120,14 @@ def process_buy(drink):
         return invalid_input_type['invalid_sold_out']
     if drink['cost'] > total_money:
         return invalid_input_type['invalid_money_range']
+    change = process_change(drink['cost'], change_dict)
+    if not change:
+        return invalid_input_type['invalid_change']
     else:
-        change = process_change(drink['cost'])
-        return f'{drink["index"]}번 {drink["name"]}을 구매하셨습니다. 잔돈 : {change}원'
+        total_change = 0
+        for money in change_dict:
+            total_change += money * change_dict[money]
+        return f'{drink["index"]}번 {drink["name"]}을 구매하셨습니다. \n{show_change(change_dict)}'
         
 def transport_drink_name_input(input_value):
     if input_value.isnumeric() is True:
@@ -158,7 +197,7 @@ def show_input_money():
         tmp_string += f'{money}\t: {settings.TEMP_SALES[money]}개\n'
         total_money += money * settings.TEMP_SALES[money]
     tmp_string += f'총\t: {total_money}원\n'
-    tmp_string += '============================\n'
+    tmp_string += '============================'
     return tmp_string
 
 def money_input():
