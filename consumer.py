@@ -61,7 +61,7 @@ def process_drink_list():
         drink_sold_out = drink['cost']
         if drink['stock'] == 0:
             drink_sold_out = 'X'
-        
+
         tmp_string += f'\n{index}. {drink["name"]}\t: {drink_sold_out}'
     tmp_string += '\n============================'
     return tmp_string
@@ -80,7 +80,7 @@ def change_calculation(change, change_dict):
         return False
     return True
 
-#음료수 구매하기    
+#음료수 구매하기
 def process_change(cost, change_dict):
     total_money = 0
     for money in settings.TEMP_SALES:
@@ -127,8 +127,9 @@ def process_buy(drink):
         total_change = 0
         for money in change_dict:
             total_change += money * change_dict[money]
+        settings.DRINK_STOCK[drink['index']]['stock'] -= 1
         return f'{drink["index"]}번 {drink["name"]}을 구매하셨습니다. \n{show_change(change_dict)}'
-        
+
 def transport_drink_name_input(input_value):
     if input_value.isnumeric() is True:
         if int(input_value) >= settings.DRINK_POCKET_SIZE or int(input_value) < 0:
@@ -189,7 +190,7 @@ def process_money_input():
     print(show_input_money())
     money_input()
     return show_input_money()
-    
+
 def show_input_money():
     tmp_string = '========투입된 금액=========\n'
     total_money = 0
@@ -219,7 +220,7 @@ def money_input():
             money = lst[num]
         else:
             print(invalid_input_type[cnt])
-        
+
 # 투입한 금액 반환받기
 def process_money_return():
     total_money = 0
